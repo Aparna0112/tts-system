@@ -1,0 +1,25 @@
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - kokkoro
+      - chatterbox
+    environment:
+      - KOKKORO_URL=http://kokkoro:8001
+      - CHATTERBOX_URL=http://chatterbox:8002
+
+  kokkoro:
+    build: ./engines/kokkoro
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./outputs:/app/outputs
+
+  chatterbox:
+    build: ./engines/chatterbox
+    ports:
+      - "8002:8002"
+    volumes:
+      - ./outputs:/app/outputs

@@ -1,0 +1,7 @@
+{
+  "name": "TTS System",
+  "image": "ubuntu:22.04",
+  "startScript": "apt update && apt install -y git docker.io docker-compose-plugin && git clone https://github.com/yourusername/tts-system.git && cd tts-system && docker compose up --build -d",
+  "ports": [8000, 8001, 8002],
+  "volumeSize": 10
+}
