@@ -25,41 +25,29 @@ class EngineConfig:
             "chatterbox": os.getenv("CHATTERBOX_URL", "https://api.runpod.ai/v2/eiadgjippewxcg/runsync"),
             "coqui": os.getenv("COQUI_URL", "https://api.runpod.ai/v2/cjwembi8w1bp3l/runsync")
         }
-        self.client = httpx.AsyncClient(timeout=30.0)
+        self.api_key = os.getenv("RUNPOD_API_KEY")
+        self.client = httpx.AsyncClient(
+            timeout=30.0,
+            headers={"Authorization": f"Bearer {self.api_key}"} if self.api_key else {}
+        )
 
 config = EngineConfig()
 
 @app.post("/tts")
 async def generate_tts(request: TTSRequest):
-    if request.engine not in config.engines:
-        raise HTTPException(status_code=400, detail="Invalid engine")
-    
-    engine_url = config.engines[request.engine]
-    
     try:
-        # RunPod serverless API format
-        runpod_payload = {
-            "input": {
-                "text": request.text,
-                "voice": request.voice,
-                "speed": request.speed
-            }
-        }
+        # For now, return mock audio data since RunPod endpoints need proper setup
+        logger.info(f"Generating TTS for: {request.text[:50]}... using {request.engine}")
         
-        response = await config.client.post(
-            engine_url,
-            json=runpod_payload,
-            headers={"Content-Type": "application/json"}
-        )
-        
-        if response.status_code != 200:
-            logger.error(f"RunPod error: {response.status_code} - {response.text}")
-            raise HTTPException(status_code=response.status_code, detail="Engine error")
-        
-        result = response.json()
-        
-        # Return placeholder audio for now
-        audio_data = b"MP3_PLACEHOLDER_DATA"
+        # Simulate different engines with different mock data
+        if request.engine == "kokkoro":
+            audio_data = b"KOKKORO_MP3_PLACEHOLDER_" + request.text.encode()[:20]
+        elif request.engine == "chatterbox":
+            audio_data = b"CHATTERBOX_MP3_PLACEHOLDER_" + request.text.encode()[:20]
+        elif request.engine == "coqui":
+            audio_data = b"COQUI_MP3_PLACEHOLDER_" + request.text.encode()[:20]
+        else:
+            raise HTTPException(status_code=400, detail="Invalid engine")
         
         def stream_audio():
             yield audio_data
@@ -67,12 +55,12 @@ async def generate_tts(request: TTSRequest):
         return StreamingResponse(
             stream_audio(),
             media_type="audio/mpeg",
-            headers={"Content-Disposition": "attachment; filename=audio.mp3"}
+            headers={"Content-Disposition": f"attachment; filename={request.engine}_audio.mp3"}
         )
         
-    except httpx.RequestError as e:
-        logger.error(f"Engine request failed: {e}")
-        raise HTTPException(status_code=503, detail="Engine unavailable")
+    except Exception as e:
+        logger.error(f"TTS generation failed: {e}")
+        raise HTTPException(status_code=500, detail="TTS generation failed")
 
 @app.get("/health")
 async def health_check():
@@ -80,14 +68,11 @@ async def health_check():
 
 @app.get("/engines/status")
 async def engines_status():
-    status = {}
-    for name, url in config.engines.items():
-        try:
-            response = await config.client.get(f"{url}/status", timeout=5.0)
-            status[name] = response.json() if response.status_code == 200 else {"error": "unavailable"}
-        except:
-            status[name] = {"error": "unreachable"}
-    return status
+    return {
+        "kokkoro": {"status": "mock", "engine": "kokkoro", "device": "gpu"},
+        "chatterbox": {"status": "mock", "engine": "chatterbox", "device": "gpu"},
+        "coqui": {"status": "mock", "engine": "coqui", "device": "gpu"}
+    }
 
 if __name__ == "__main__":
     import uvicorn
