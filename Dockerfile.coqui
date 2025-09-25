@@ -1,0 +1,21 @@
+FROM pytorch/pytorch:2.0.1-cuda11.7-cudnn8-runtime
+
+ENV PYTHONUNBUFFERED=1
+
+RUN apt-get update && apt-get install -y \
+    espeak-ng \
+    espeak-ng-data \
+    libsndfile1 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+COPY engines/coqui/requirements.txt .
+RUN pip install --no-cache-dir torch torchvision torchaudio
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY engines/coqui/app.py .
+
+EXPOSE 8000
+
+CMD ["python", "-m", "uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8000"]
