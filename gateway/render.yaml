@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: tts-gateway
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: KOKKORO_URL
+        value: https://your-kokkoro-runpod-url.io
+      - key: CHATTERBOX_URL  
+        value: https://your-chatterbox-runpod-url.io
+      - key: COQUI_URL
+        value: https://your-coqui-runpod-url.io
