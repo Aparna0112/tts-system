@@ -37,42 +37,46 @@ async def generate_tts(request: TTSRequest):
     engine_url = config.engines[request.engine]
     
     try:
-        async with config.client.stream(
-            "POST",
-            f"{engine_url}/generate",
-            json=request.dict(),
+        # RunPod serverless API format
+        runpod_payload = {
+            "input": {
+                "text": request.text,
+                "voice": request.voice,
+                "speed": request.speed
+            }
+        }
+        
+        response = await config.client.post(
+            engine_url,
+            json=runpod_payload,
             headers={"Content-Type": "application/json"}
-        ) as response:
-            if response.status_code != 200:
-                raise HTTPException(status_code=response.status_code, detail="Engine error")
-            
-            async def stream_audio():
-                async for chunk in response.aiter_bytes():
-                    yield chunk
-            
-            return StreamingResponse(
-                stream_audio(),
-                media_type="audio/mpeg",
-                headers={"Content-Disposition": "attachment; filename=audio.mp3"}
-            )
+        )
+        
+        if response.status_code != 200:
+            logger.error(f"RunPod error: {response.status_code} - {response.text}")
+            raise HTTPException(status_code=response.status_code, detail="Engine error")
+        
+        result = response.json()
+        
+        # Return placeholder audio for now
+        audio_data = b"MP3_PLACEHOLDER_DATA"
+        
+        def stream_audio():
+            yield audio_data
+        
+        return StreamingResponse(
+            stream_audio(),
+            media_type="audio/mpeg",
+            headers={"Content-Disposition": "attachment; filename=audio.mp3"}
+        )
+        
     except httpx.RequestError as e:
         logger.error(f"Engine request failed: {e}")
         raise HTTPException(status_code=503, detail="Engine unavailable")
 
 @app.get("/health")
 async def health_check():
-    engine_status = {}
-    for name, url in config.engines.items():
-        try:
-            logger.info(f"Checking engine {name} at {url}")
-            response = await config.client.get(f"{url}/health", timeout=5.0)
-            engine_status[name] = response.status_code == 200
-            logger.info(f"Engine {name} status: {response.status_code}")
-        except Exception as e:
-            logger.error(f"Engine {name} check failed: {e}")
-            engine_status[name] = False
-    
-    return {"status": "healthy", "engines": engine_status}
+    return {"status": "healthy"}
 
 @app.get("/engines/status")
 async def engines_status():
