@@ -8,9 +8,13 @@ from typing import Optional, Dict, Any
 import io
 import os
 
-app = FastAPI(title="TTS Gateway", version="1.0.0")
+app = FastAPI(title="TTS Gateway", version="1.0.1")
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
+@app.get("/")
+async def root():
+    return {"message": "TTS Gateway v1.0.1 - Working!"}
 
 class TTSRequest(BaseModel):
     text: str
