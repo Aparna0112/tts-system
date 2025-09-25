@@ -1,0 +1,54 @@
+services:
+  kokkoro:
+    build: ./engines/kokkoro
+    ports:
+      - "8001:8000"
+    environment:
+      - CUDA_VISIBLE_DEVICES=
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  chatterbox:
+    build: ./engines/chatterbox
+    ports:
+      - "8002:8000"
+    environment:
+      - CUDA_VISIBLE_DEVICES=
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  coqui:
+    build: ./engines/coqui
+    ports:
+      - "8003:8000"
+    environment:
+      - CUDA_VISIBLE_DEVICES=
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"
+    depends_on:
+      - kokkoro
+      - chatterbox
+      - coqui
+    environment:
+      - KOKKORO_URL=http://kokkoro:8000
+      - CHATTERBOX_URL=http://chatterbox:8000
+      - COQUI_URL=http://coqui:8000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

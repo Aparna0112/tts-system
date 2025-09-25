@@ -1,0 +1,43 @@
+gateway:
+  name: "tts-gateway"
+  image: "tts-gateway:latest"
+  gpu_type: "NVIDIA RTX 4090"
+  gpu_count: 1
+  memory: "16GB"
+  cpu_count: 4
+  ports:
+    - "8000:8000"
+  env:
+    - KOKKORO_URL: "https://kokkoro-endpoint.runpod.io"
+    - CHATTERBOX_URL: "https://chatterbox-endpoint.runpod.io"
+    - COQUI_URL: "https://coqui-endpoint.runpod.io"
+
+kokkoro:
+  name: "tts-kokkoro"
+  image: "tts-kokkoro:latest"
+  gpu_type: "NVIDIA RTX 4090"
+  gpu_count: 1
+  memory: "16GB"
+  cpu_count: 2
+  ports:
+    - "8000:8000"
+
+chatterbox:
+  name: "tts-chatterbox"
+  image: "tts-chatterbox:latest"
+  gpu_type: "NVIDIA RTX 4090"
+  gpu_count: 1
+  memory: "16GB"
+  cpu_count: 2
+  ports:
+    - "8000:8000"
+
+coqui:
+  name: "tts-coqui"
+  image: "tts-coqui:latest"
+  gpu_type: "NVIDIA RTX 4090"
+  gpu_count: 1
+  memory: "16GB"
+  cpu_count: 2
+  ports:
+    - "8000:8000"
