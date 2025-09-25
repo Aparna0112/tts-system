@@ -21,9 +21,9 @@ class TTSRequest(BaseModel):
 class EngineConfig:
     def __init__(self):
         self.engines = {
-            "kokkoro": os.getenv("KOKKORO_URL", "http://localhost:8001"),
-            "chatterbox": os.getenv("CHATTERBOX_URL", "http://localhost:8002"),
-            "coqui": os.getenv("COQUI_URL", "http://localhost:8003")
+            "kokkoro": os.getenv("KOKKORO_URL", "https://api.runpod.ai/v2/x89s2h3nk116vo/runsync"),
+            "chatterbox": os.getenv("CHATTERBOX_URL", "https://api.runpod.ai/v2/eiadgjippewxcg/runsync"),
+            "coqui": os.getenv("COQUI_URL", "https://api.runpod.ai/v2/cjwembi8w1bp3l/runsync")
         }
         self.client = httpx.AsyncClient(timeout=30.0)
 
