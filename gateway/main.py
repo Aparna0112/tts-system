@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.responses import StreamingResponse
+from fastapi.security import HTTPBearer
 from pydantic import BaseModel
 import logging
+import os
+from auth import create_access_token, verify_token
 
 app = FastAPI(title="TTS Gateway", version="2.0.0")
 logging.basicConfig(level=logging.INFO)
@@ -13,13 +16,29 @@ class TTSRequest(BaseModel):
     voice: str = "default"
     speed: float = 1.0
 
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+
 @app.get("/")
 async def root():
     return {"message": "TTS Gateway v2.0.0 - Working!", "status": "online"}
 
+@app.post("/login")
+async def login(request: LoginRequest):
+    # Simple auth - in production use proper user database
+    if request.username == "admin" and request.password == os.getenv("ADMIN_PASSWORD", "admin123"):
+        token = create_access_token(data={"sub": request.username})
+        return TokenResponse(access_token=token)
+    raise HTTPException(status_code=401, detail="Invalid credentials")
+
 @app.post("/tts")
-async def generate_tts(request: TTSRequest):
-    logger.info(f"Generating TTS for: {request.text[:50]}... using {request.engine}")
+async def generate_tts(request: TTSRequest, username: str = Depends(verify_token)):
+    logger.info(f"User {username} generating TTS for: {request.text[:50]}... using {request.engine}")
     
     # Create mock audio data based on engine
     if request.engine == "kokkoro":
