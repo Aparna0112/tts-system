@@ -6,9 +6,11 @@ services:
     depends_on:
       - kokkoro
       - chatterbox
+      - coqui
     environment:
       - KOKKORO_URL=http://kokkoro:8001
       - CHATTERBOX_URL=http://chatterbox:8002
+      - COQUI_URL=http://coqui:8003
 
   kokkoro:
     build: ./engines/kokkoro
@@ -21,5 +23,12 @@ services:
     build: ./engines/chatterbox
     ports:
       - "8002:8002"
+    volumes:
+      - ./outputs:/app/outputs
+
+  coqui:
+    build: ./engines/coqui
+    ports:
+      - "8003:8003"
     volumes:
       - ./outputs:/app/outputs
