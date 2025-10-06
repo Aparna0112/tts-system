@@ -23,11 +23,11 @@ class TokenResponse(BaseModel):
     token_type: str = "bearer"
 
 @app.get("/")
-async def root():
+def root():
     return {"message": "TTS Gateway v2.0.0 - Working!", "status": "online"}
 
 @app.post("/tts")
-async def generate_tts(request: TTSRequest):
+def generate_tts(request: TTSRequest):
     logger.info(f"Generating TTS for: {request.text[:50]}... using {request.engine}")
     
     # Create mock audio data based on engine
@@ -50,11 +50,11 @@ async def generate_tts(request: TTSRequest):
     )
 
 @app.get("/health")
-async def health_check():
+def health_check():
     return {"status": "healthy", "version": "2.0.0"}
 
 @app.get("/engines/status")
-async def engines_status():
+def engines_status():
     return {
         "kokkoro": {"status": "ready", "engine": "kokkoro", "device": "gpu"},
         "chatterbox": {"status": "ready", "engine": "chatterbox", "device": "gpu"},
