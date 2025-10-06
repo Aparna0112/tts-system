@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: tts-gateway
+    env: docker
+    region: oregon
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    envVars:
+      - key: KOKKORO_URL
+        sync: false
+      - key: CHATTERBOX_URL
+        sync: false
+      - key: COQUI_URL
+        sync: false
+    healthCheckPath: /health
